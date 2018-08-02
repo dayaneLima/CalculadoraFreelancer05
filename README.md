@@ -95,11 +95,6 @@ A implementação do acesso a dados é feito na camada CalculadoraFreelancer.Inf
 
 ### Repositório Base
 
-Você deve ter reparado que as classes AzureRepository e AzureProjetoRepository são praticamente iguais, 
-mas uma possui mais métodos que outra, fizemos isso por questões didáticas, agora vamos arrumar essa bagunça.
-
-Exclua a nossa classe AzureProjetoRepository, pois utilizaremos somente a AzureRepository.
-
 A AzureRepository será a nossa classe base e genérica. Então primeiramente ela terá uma tipagem genérica relacionada a ela, como fizemos no IRepository. Ficará assim:
 
 ```c#
@@ -232,14 +227,14 @@ Em seu construtor, após a funcão InitializeComponent(), instâncie um objeto d
 ```c#
 public partial class App : Application
 {
-		public App ()
-		{
-			      InitializeComponent();
+	public App ()
+	{
+	      	InitializeComponent();
 
-            var unityContainer = new UnityContainer();
+            	var unityContainer = new UnityContainer();
 
-            MainPage = new NavigationPage(new ProjetoPage());
-		}
+            	MainPage = new NavigationPage(new ProjetoPage());
+	}
     
     ...
     
@@ -249,8 +244,8 @@ public partial class App : Application
 Agora vamos registrar as nossas interfaces informando de qual instância deve se criar a classe:
 
 ```c#
-	public partial class App : Application
-	{
+public partial class App : Application
+{
       public App ()
       {
               InitializeComponent();
@@ -262,14 +257,14 @@ Agora vamos registrar as nossas interfaces informando de qual instância deve se
 
               MainPage = new NavigationPage(new ProjetoPage());
       }
-  }
+}
 ````
 
 Vamos agora informar ao Builder que deverá utilizar esse container que acabamos de definir, dessa forma:
 
 ```c#
-	public partial class App : Application
-	{
+public partial class App : Application
+{
       public App ()
       {
               InitializeComponent();
@@ -283,12 +278,117 @@ Vamos agora informar ao Builder que deverá utilizar esse container que acabamos
 
               MainPage = new NavigationPage(new ProjetoPage());
       }
-  }
+}
 ````
 
 ### Injeção de dependência - ViewModels
 
+Vamos corrigir as nossas ViewModels para utilização de interfaces ao invés de classes concretas. Vamos utilizar injeção de dependência via construtor.
 
+Edite a CalculoValorHoraPageViewModel.cs. Crie uma propriedade para essa classe do tipo IProfissionalRepository:
 
+```c#
+public IProfissionalRepository ProfissionalRepository { get; }
+````
 
+Vá no construtor dessa classe e coloque nos parâmetros recebidos um objeto do tipo IProfissionalRepository, e o utilize para inicial a nossa propriedade criada anteriormente:
 
+```c#
+public IProfissionalRepository ProfissionalRepository { get; }
+
+public CalculoValorHoraPageViewModel(IProfissionalRepository profissionalRepository)
+{
+    GravarCommand = new Command(ExecuteGravarCommand);
+    Profissional = new Profissional();
+    ProfissionalRepository = profissionalRepository;
+}
+````
+
+Não foi mencionado anteriormente, mas o correto é que haja apenas um Profissional na tabela de Profissional do Azure, então ao abrir a tela vamos obter o profissional da base de dados do Azure.
+
+Primeiramente remova a instanciação do objeto profissional do construtor e chame uma função chamada ObterProfissional que vamos criar no próximo passo:
+
+```c#
+public CalculoValorHoraPageViewModel(IProfissionalRepository profissionalRepository)
+{
+    GravarCommand = new Command(ExecuteGravarCommand);
+    ProfissionalRepository = profissionalRepository;
+    ObterProfissional();            
+}
+````
+
+Agora vamos criar a função ObterProfissional, ela deverá chamar a função GetFirst do repository, caso retorne null é porque não foi encontrado nenhum profissional, então devemos instanciar nosso objeto Profissional, caso contrário, atribuimos o resultado da chamada GetFirst a nossa propriedade Profissional da ViewModel. 
+
+```c#
+private async void ObterProfissional()
+{
+    Profissional = await ProfissionalRepository.GetFirst() ?? new Profissional();
+}
+````
+
+Caso tenha algo em nossa propriedade profissional devemos atualizar os valores da tela, vamos então criar uma funçào chamada AtualizaValoresTela, dessa forma:
+
+```c#
+private void AtualizaValoresTela()
+{
+    ValorGanhoMes = Profissional.ValorGanhoMes;
+    HorasTrabalhadasPorDia = Profissional.HorasTrabalhadasPorDia;
+    DiasTrabalhadosPorMes = Profissional.DiasTrabalhadosPorMes;
+    DiasFeriasPorAno = Profissional.DiasFeriasPorAno;
+    ValorDaHora = Profissional.ValorPorHora;
+}
+````
+
+Como estamos utilizando Bindable na propriedade Profissional, no set dessa propriedade podemos chamar a função AtualizaValoresTela, dessa forma:
+
+```c#
+private Profissional profissional;
+public Profissional Profissional
+{
+    get { return profissional; }
+    set
+    {
+	SetProperty(ref profissional, value);
+	AtualizaValoresTela();
+    }
+}
+````
+
+Agora vamos na função ExecuteGravarCommand e chamar o nosso repository. Temos que verificar se há algo na propriedade Id do profissional, se há representa que o profissional já existe e deve então atualizá-lo, caso contrário deverá fazer uma inserção.
+
+```c#
+private async void ExecuteGravarCommand(object obj)
+{
+    Profissional.ValorGanhoMes = ValorGanhoMes;
+    Profissional.HorasTrabalhadasPorDia = HorasTrabalhadasPorDia;
+    Profissional.DiasTrabalhadosPorMes = DiasTrabalhadosPorMes;
+    Profissional.DiasFeriasPorAno = DiasFeriasPorAno;
+    Profissional.DiasDoencaPorAno = DiasDoencaPorAno;
+    Profissional.ValorPorHora = ValorDaHora;
+
+    if (!string.IsNullOrEmpty(profissional.Id))
+	await ProfissionalRepository.Update(profissional);
+    else
+	await ProfissionalRepository.Insert(profissional);
+
+    await App.Current.MainPage.DisplayAlert("Sucesso", "Valor por hora gravado!", "Ok");
+}
+````
+
+### Injeção de dependência - Views
+
+Agora se abrirmos o arquivo CalculoValorHoraPage.xaml.cs, no construtor onde instanciavamos um objeto do tipo CalculoValorHoraPageViewModel estará marcado com erro, pois a nossa ViewModel espera receber um objeto do tipo IProfissionalRepository.
+Mas não podemos criar uma instância concreta de ProfissionalRepository e passar por parâmetro, pois estariamos acabando com a vantagem da injeção de dependência e do reuso. Temos que chamar o nosso Builder, informando para ele criar uma instância do tipo CalculoValorHoraPageViewModel, e ele será responsável por resolver as dependências. Ficará assim:
+
+```c#
+public CalculoValorHoraPage ()
+{
+	InitializeComponent ();
+	var viewModel = ServiceLocator.Current.GetInstance<CalculoValorHoraPageViewModel>();
+	BindingContext = viewModel;
+}   
+````
+
+## Resultado
+
+Agora temos um código mais organizado, limpo, com um reuso bem maior do que anteriormente. A aparência do app não mudou em nada, mas internamente obtivemos um ganho enorme, facilitando a nossa vida de desenvolvedor, no momento de dar manutenções e reutilização de código.
