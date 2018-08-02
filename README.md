@@ -213,6 +213,82 @@ Pronto, nossa camada de Infra está corrigida.
 
 ## Camada Principal - CalculadoraFreelancer
 
-Falta agora alterar na nossa camada principal. 
+Falta agora alterar a nossa camada principal. 
+
+### Injeção de dependência - Instalação e configuração do Unity
+
+Primeiramente não vamos instanciar objetos do tipo ProjetoRepository ou ProfissionalRepository, vamos fazer da forma correta, para reduzir nosso acoplamento, vamos utilizar a injeção de dependência.
+
+Vamos instalar uma biblioteca para cuidar de resolver as dependências, ela será nosso Builder e tratará nosso container, conceitos que vimos na aula. 
+
+Uma das bibliotecas bastante utilizada é a Unity. Vamos então no nosso projeto principal, clicar com o botão direito e ir em Manage NuGet Packages..., em Browse pesquise por Unity. Após encontrá-la, clique em install.
+
+ <img src="https://github.com/dayaneLima/CalculadoraFreelancer0t/blob/master/Docs/Imgs/aula_05_install_unity.png" alt="Instalação Unity" width="100%">
+
+Após a instalação vamos registrar nossos containers, ou seja, informar se for a interface IProjetoRepository, deverá entregar uma instância do tipo ProjetoRepository. Edite o arquivo chamado App.xaml.cs.
+
+Em seu construtor, após a funcão InitializeComponent(), instâncie um objeto do tipo UnityContainer, dessa forma:
+
+```c#
+public partial class App : Application
+{
+		public App ()
+		{
+			      InitializeComponent();
+
+            var unityContainer = new UnityContainer();
+
+            MainPage = new NavigationPage(new ProjetoPage());
+		}
+    
+    ...
+    
+}
+````
+
+Agora vamos registrar as nossas interfaces informando de qual instância deve se criar a classe:
+
+```c#
+	public partial class App : Application
+	{
+      public App ()
+      {
+              InitializeComponent();
+
+              var unityContainer = new UnityContainer();
+
+              unityContainer.RegisterType<IProjetoRepository, ProjetoRepository>();
+              unityContainer.RegisterType<IProfissionalRepository, ProfissionalRepository>();
+
+              MainPage = new NavigationPage(new ProjetoPage());
+      }
+  }
+````
+
+Vamos agora informar ao Builder que deverá utilizar esse container que acabamos de definir, dessa forma:
+
+```c#
+	public partial class App : Application
+	{
+      public App ()
+      {
+              InitializeComponent();
+
+              var unityContainer = new UnityContainer();
+
+              unityContainer.RegisterType<IProjetoRepository, ProjetoRepository>();
+              unityContainer.RegisterType<IProfissionalRepository, ProfissionalRepository>();
+
+              ServiceLocator.SetLocatorProvider(() => new UnityServiceLocator(unityContainer));
+
+              MainPage = new NavigationPage(new ProjetoPage());
+      }
+  }
+````
+
+### Injeção de dependência - ViewModels
+
+
+
 
 
