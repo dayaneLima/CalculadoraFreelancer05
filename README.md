@@ -336,6 +336,7 @@ private void AtualizaValoresTela()
     DiasTrabalhadosPorMes = Profissional.DiasTrabalhadosPorMes;
     DiasFeriasPorAno = Profissional.DiasFeriasPorAno;
     ValorDaHora = Profissional.ValorPorHora;
+    DiasDoencaPorAno = Profissional.DiasDoencaPorAno;
 }
 ````
 
