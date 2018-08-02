@@ -216,11 +216,11 @@ Primeiramente não vamos instanciar objetos do tipo ProjetoRepository ou Profiss
 
 Vamos instalar uma biblioteca para cuidar de resolver as dependências, ela será nosso Builder e tratará nosso container, conceitos que vimos na aula. 
 
-Uma das bibliotecas bastante utilizada é a Unity. Vamos então no nosso projeto principal, clicar com o botão direito e ir em Manage NuGet Packages..., em Browse pesquise por Unity. Após encontrá-la, clique em install.
+Uma das bibliotecas bastante utilizada é a Unity. Vamos então na nossa solution, clicar com o botão direito e ir em Manage NuGet Packages for solution, em Browse pesquise por Unity. Após encontrá-la escolha para instalar no projeto principal, no do Android e IOS, e então clique em install.
 
- <img src="https://github.com/dayaneLima/CalculadoraFreelancer0t/blob/master/Docs/Imgs/aula_05_install_unity.png" alt="Instalação Unity" width="100%">
+ <img src="https://github.com/dayaneLima/CalculadoraFreelancer0t/blob/master/Docs/Imgs/aula_05_install_unity_01.png" alt="Instalação Unity" width="100%">
 
-Após a instalação vamos registrar nossos containers, ou seja, informar se for a interface IProjetoRepository, deverá entregar uma instância do tipo ProjetoRepository. Edite o arquivo chamado App.xaml.cs.
+Após a instalação vamos registrar nossos containers, ou seja, informar se for a interface IProjetoRepository, deverá entregar uma instância do tipo ProjetoRepository. Edite o arquivo chamado App.xaml.cs que se encontra em nosso projeto principal.
 
 Em seu construtor, após a funcão InitializeComponent(), instâncie um objeto do tipo UnityContainer, dessa forma:
 
