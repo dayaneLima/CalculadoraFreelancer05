@@ -7,7 +7,7 @@ using System.Text;
 
 namespace CalcFreelancer.Infra.Data.Repository
 {
-    public class ProfissionalRepository : AzureRepository<Profissional>, IProfissionalRepository
+    public class ProfissionalRepository : SqLiteRepository<Profissional>, IProfissionalRepository
     {
     }
 }

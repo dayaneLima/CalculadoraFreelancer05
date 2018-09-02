@@ -1,12 +1,13 @@
 ﻿using CalcFreelancer.Domain.Core.Models;
 using Microsoft.WindowsAzure.MobileServices;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace CalcFreelancer.Models
 {
-    [DataTable("Profissional")]
+    [Table("Profissional")]
     public class Profissional : Entity
     {
         public double ValorGanhoMes { get; set; }

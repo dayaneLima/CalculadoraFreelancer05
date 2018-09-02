@@ -7,7 +7,7 @@ using System.Text;
 
 namespace CalcFreelancer.Infra.Data.Repository
 {
-    public class ProjetoRepository : AzureRepository<Projeto>, IProjetoRepository
+    public class ProjetoRepository : SqLiteRepository<Projeto>, IProjetoRepository
     {
     }
 }
