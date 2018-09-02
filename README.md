@@ -8,7 +8,7 @@ Vamos agora arrumar o nosso repositório. Utilizaremos Injeção de dependência
 
 ### Interface Repository
 
-Dentro do projeto CalculadoraFreelancer.Domain vamos criar uma pasta chamada Interface. Dentro desta pasta vamos criar uma interface chamada IRepository. 
+Dentro do projeto CalcFreelancer.Domain vamos criar uma pasta chamada Interfaces. Dentro desta pasta vamos criar uma interface chamada IRepository. 
 Essa interface terá as assinaturas dos métodos básicos que é necessário para manipulação de dados. Primeiramente vamos criar a interface:
 
 ```c#
@@ -17,8 +17,7 @@ Essa interface terá as assinaturas dos métodos básicos que é necessário par
   }
 ````
 
-Cada entidade terá seu repositório, então nossa interface poderá já definir que deverá ser de uma entidade específica, e utilizar dessa tipagem em seus métodos.
-Vamos então definir uma tipagem genérica que depois em nossos repositórios específicos irá definir a tipagem concreta.
+Cada entidade terá seu repositório, então nossa interface poderá já definir que deverá ser de uma entidade específica, e utilizar dessa tipagem em seus métodos. Vamos então definir uma tipagem genérica que depois em nossos repositórios específicos irá definir a tipagem concreta.
 Então mude o nome da interface dessa forma:
 
 ```c#
@@ -43,8 +42,7 @@ Agora vamos criar as funções básicas:
   
   ### Interface IProfissionalRepository
   
-  Agora que temos nossa interface genérica, vamos criar uma interface para cada domínio que temos. ainda dentro do projeto CalculadoraFreelancer.Domain, na pasta profissionais 
-  crie uma pasta chamada Repository, e dentro dela crie uma interface chamada IProfissionalRepository, dessa forma:
+Agora que temos nossa interface genérica, vamos criar uma interface para cada domínio que temos. Ainda dentro do projeto CalcFreelancer.Domain, na pasta Profissionais crie uma pasta chamada Repository, e dentro dela crie uma interface chamada IProfissionalRepository, dessa forma:
   
 ```c#
  public interface IProfissionalRepository
@@ -52,8 +50,7 @@ Agora vamos criar as funções básicas:
   }
 ````
   
-  Como temos uma interface base, chamada IRepository, isso significa que todas as outras interfaces de repositório devem implementar dela, pois ela possui as assinaturas das operações base. 
-  Então vamos implementar de IRepository.
+Como temos uma interface base, chamada IRepository, isso significa que todas as outras interfaces de repositório devem implementar dela, pois ela possui as assinaturas das operações base. Então vamos implementar de IRepository.
     
 ```c#
  public interface IProfissionalRepository : IRepository
@@ -62,7 +59,9 @@ Agora vamos criar as funções básicas:
 ````
 
 Lembra que nossa interface IRepository tem uma tipagem (IRepository<TEntity>) ? É agora que vamos utilizar isso e ficará mais fácil de entender.
-Como estamos criando agora o repositório do Profissional, essa tipagem do repositório será do Profissional, ou seja, agora todas aquelas assinaturas de funções retornarão e receberão objetos do tipo Profissinal.
+	
+Como estamos criando agora o repositório do Profissional, essa tipagem do repositório será do Profissional, ou seja, agora todas aquelas assinaturas de funções retornarão e receberão objetos do tipo Profissional.
+
 A interface então ficará dessa forma:
 
 ```c#
@@ -71,12 +70,13 @@ A interface então ficará dessa forma:
     }
 ````
  
- Como ainda não temos nenhuma operação específica para o Profissional, nosso repositória ficará como mostrado acima.
+ Como ainda não temos nenhuma operação específica para o Profissional, nosso repositório ficará como mostrado acima.
  
    ### Interface IProjetoRepository
  
- Agora vamos fazer o mesmo para o Projeto. Ainda no projeto CalculadoraFreelancer.Domain, dentro da pasta Projetos crie uma pasta chamada Repository.
- Dentro dela crie uma interface chamada IProjetoRepository, implemente de IRepository definindo a tipagem para Projeto. Ficará assim:
+Agora vamos fazer o mesmo para o Projeto. Ainda no projeto CalcFreelancer.Domain, dentro da pasta Projetos crie uma pasta chamada Repository. Dentro dela crie uma interface chamada IProjetoRepository, implemente de IRepository definindo a tipagem para Projeto. 
+
+Ficará assim:
  
  ```c#
 public interface IProjetoRepository : IRepository<Projeto>
@@ -84,14 +84,12 @@ public interface IProjetoRepository : IRepository<Projeto>
 }
 ````
 
-Perfeito, agora temos em nosso domínio todas as assinaturas base para manipulação de dados. 
-O reuso e o ganho com isso é enorme, pois agora como há as operações base, quem desejar implementar o acesso a dados para o nosso domínio basta implementar dessas interfaces. 
-Nossa camada de domínio não precisa saber como o acesso a dados é feito, se é MySql, Azure, SQLite, arquivo de texto, 
-ele só se importa em chamar os métodos definidos na interface e receber o resultado especificado.
+Perfeito, agora temos em nosso domínio todas as assinaturas base para manipulação de dados. O reuso e o ganho com isso é enorme, pois agora como há as operações base, quem desejar implementar o acesso a dados para o nosso domínio basta implementar dessas interfaces. 
+Nossa camada de domínio não precisa saber como o acesso a dados é feito, se é MySql, Azure, SQLite, arquivo de texto ou qualquer outra tecnologia, ele só se importa em chamar os métodos definidos na interface e receber o resultado especificado nela.
 
-## Camada CalculadoraFreelancer.Infra.Data
+## Camada CalcFreelancer.Infra.Data
 
-A implementação do acesso a dados é feito na camada CalculadoraFreelancer.Infra.Data, vamos corrigí-la.
+A implementação do acesso a dados é feito na camada CalcFreelancer.Infra.Data, vamos corrigí-la.
 
 ### Repositório Base
 
@@ -130,7 +128,7 @@ Primeiramente a nossa propriedade Table não será mais do tipo Profissional e s
      private IMobileServiceTable<TEntity> Table;
 ````
  
- No contrutor da classe AzureRepository onde instanciamos essa propriedade, devemos corrigir também a tipagem, no lugar de Profissional vamos trocar por TEntity:
+ No construtor da classe AzureRepository onde instanciamos essa propriedade, devemos corrigir também a tipagem. No lugar de Profissional vamos trocar por TEntity:
  
  ```c#
    public AzureRepository()
@@ -143,21 +141,67 @@ Primeiramente a nossa propriedade Table não será mais do tipo Profissional e s
  
  Vamos as correções dos métodos agora. Primeiramente altere os métodos Insert e Delete, o tipo de retorno deles é void, mude para Task, pois será operações assíncronas.
  
- Agora tudo que é do tipo Profissional deverá ser alterado para ser do tipo TEntity, vamos acelerar essa correção. Aperte ctr + h, abrirá essa telinha:
- 
- <img src="https://github.com/dayaneLima/CalculadoraFreelancer05/blob/master/Docs/Imgs/aula_05_subistituir_01.png" alt="Subistituir texto" width="100%">
- 
- No primeiro campo digite o termpo que quer encontrar, no caso, Profissional, no segundo campo digite por qual palavra deseja substituir, no caso coloque TEntity. 
- Após clique para substituir todos, dessa forma:
- 
- <img src="https://github.com/dayaneLima/CalculadoraFreelancer05/blob/master/Docs/Imgs/aula_05_subistituir_02.png" alt="Subistituir texto" width="100%">
- 
-Prontinho, a tipagem foi substituída, caso não queira fazer dessa forma, pode alterar método a método, onde há a tipagem Profissional trocando por TEntity.
+Agora tudo que é do tipo Profissional deverá ser alterado para ser do tipo TEntity, vamos fazer manualmente para entendermos melhor, alterando método a método. A classe ficou assim:
+
+```c#
+    public class AzureRepository<TEntity> : IRepository<TEntity> where TEntity : Entity
+    {
+        private IMobileServiceClient Client;
+        private IMobileServiceTable<TEntity> Table;
+
+        public AzureRepository()
+        {
+            string MyAppServiceURL = "rua url aqui";
+            Client = new MobileServiceClient(MyAppServiceURL);
+            Table = Client.GetTable<TEntity>();
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAll()
+        {
+            var empty = new TEntity[0];
+            try
+            {
+                return await Table.ToEnumerableAsync();
+            }
+            catch (Exception)
+            {
+                return empty;
+            }
+        }
+
+        public async Task Insert(TEntity tEntity)
+        {
+            await Table.InsertAsync(tEntity);
+        }
+
+        public async Task Update(TEntity tEntity)
+        {
+            await Table.UpdateAsync(tEntity);
+        }
+
+        public async Task Delete(TEntity tEntity)
+        {
+            await Table.DeleteAsync(tEntity);
+        }
+
+        public async Task<TEntity> Find(string id)
+        {
+            var itens = await Table.Where(i => i.Id == id).ToListAsync();
+            return (itens.Count > 0) ? itens[0] : null;
+        }
+
+        public async Task<TEntity> GetFirst()
+        {
+            var itens = await Table.ToListAsync();
+            return (itens.Count > 0) ? itens[0] : null;
+        }
+    }
+
+````
 
 ### ProfissionalRepository
 
-Vamos agora criar uma classe para implementar de nossa interface IProfissionalRepository. Ainda dentro da camada CalculadoraFreelancer.Infra.Data, 
-dentro da pasta Repository crie uma classe chamada ProfissionalRepository.
+Vamos agora criar uma classe para implementar de nossa interface IProfissionalRepository. Ainda dentro da camada CalcFreelancer.Infra.Data, dentro da pasta Repository crie uma classe chamada ProfissionalRepository.
 
 ```c#
  public class ProfissionalRepository
@@ -165,7 +209,7 @@ dentro da pasta Repository crie uma classe chamada ProfissionalRepository.
  }
 ````
 
-Agora ela devrá herdar da nossa classe de repositório base, a AzureRepository, que contém todas as operações base já implementadas. 
+Agora ela deverá herdar da nossa classe de repositório base, a AzureRepository, que contém todas as operações base já implementadas. 
 
 ```c#
  public class ProfissionalRepository : AzureRepository
@@ -189,11 +233,11 @@ Por fim temos que implementar da interface do repositório do profissional, a IP
   }
 ````
 
-Prontinho, nosso repositório do profissional está pronto.
+Prontinho, nosso repositório do profissional está criado.
 
 ### ProjetoRepository
 
-Vamos fazer na ProjetoRepository o mesmo que foi feito na ProfissionalRepository. Ainda dentro da camada CalculadoraFreelancer.Infra.Data, 
+Vamos fazer na ProjetoRepository o mesmo que foi feito na ProfissionalRepository. Ainda dentro da camada CalcFreelancer.Infra.Data, 
 dentro da pasta Repository crie uma classe chamada ProjetoRepository.
 
 A classe deverá herdar do AzureRepository, informando a tipagem Projeto e deverá implementar da interface IProjetoRepository. Ficará dessa forma:
@@ -206,17 +250,83 @@ A classe deverá herdar do AzureRepository, informando a tipagem Projeto e dever
 
 Pronto, nossa camada de Infra está corrigida.
 
-## Camada Principal - CalculadoraFreelancer
+## Camada Principal - CalcFreelancer
 
 Falta agora alterar a nossa camada principal. 
 
+### Criando contrato para os serviços
+
+Dentro da pasta Services crie uma pasta chamada Interfaces. Vamos agora criar uma interface para o nosso ProfissionalService chamada IProfissionalService.
+
+```c#
+public interface IProfissionalService
+{
+}
+````
+
+Vamos criar agora as assinaturas dos métodos. Inicialmente como temos somente a operaçáo de inserir, vamos criar a assinatura deste método.
+
+```c#
+public interface IProfissionalService
+{
+	void Inserir(Profissional profissional);
+}
+````
+
+Agora a a nossa classe ProfissionalService deverá herdar de IProfissionalService, ficando desta forma:
+
+```c#
+public class ProfissionalService : IProfissionalService
+{
+        private readonly AzureRepository ProfissionalRepository;
+
+        public ProfissionalService()
+        {
+            ProfissionalRepository  = new AzureRepository();
+        }
+
+        public void Inserir(Profissional profissional)
+        {
+            ProfissionalRepository.Insert(profissional);
+        }
+}
+````
+
+Vamos fazer a mesma coisa para o ProjetoService. Vamos crair dentro da pasta Services/Interfaces, uma interface chamada IProjetoService que terá também somente a assinatura do método de inserir. Ficará assim:
+
+```c#
+public interface IProjetoService
+{
+	void Inserir(Projeto projeto);
+}
+````
+
+Agora a a nossa classe ProjetoService deverá herdar de IProjetoService, ficando desta forma:
+
+```c#
+public class ProjetoService: IProjetoService
+{
+        private readonly AzureProjetoRepository ProjetoRepository;
+
+        public ProjetoService()
+        {
+            ProjetoRepository = new AzureProjetoRepository();
+        }
+
+        public void Inserir(Projeto projeto)
+        {
+            ProjetoRepository.Insert(projeto);
+        }
+}
+````
+
 ### Injeção de dependência - Instalação e configuração do Unity
 
-Primeiramente não vamos instanciar objetos do tipo ProjetoRepository ou ProfissionalRepository, vamos fazer da forma correta, para reduzir nosso acoplamento, vamos utilizar a injeção de dependência.
+Primeiramente não vamos instanciar objetos do tipo dos nossos repositórios nem dos nossos serviços, vamos fazer da forma correta, para reduzir nosso acoplamento, vamos utilizar a injeção de dependência.
 
 Vamos instalar uma biblioteca para cuidar de resolver as dependências, ela será nosso Builder e tratará nosso container, conceitos que vimos na aula. 
 
-Uma das bibliotecas bastante utilizada é a Unity. Vamos então na nossa solution, clicar com o botão direito e ir em Manage NuGet Packages for solution, em Browse pesquise por Unity. Após encontrá-la escolha para instalar no projeto principal, no do Android e IOS, e então clique em install.
+Uma das bibliotecas bastante utilizada é a Unity. Vamos então na nossa Solution, clicar com o botão direito e ir em Manage NuGet Packages for solution, em Browse pesquise por Unity. Após encontrá-la escolha para instalar no projeto principal, no do Android e IOS, e então clique em install.
 
  <img src="https://github.com/dayaneLima/CalculadoraFreelancer05/blob/master/Docs/Imgs/aula_05_install_unity_01.png" alt="Instalação Unity" width="100%">
 
@@ -241,22 +351,25 @@ public partial class App : Application
 }
 ````
 
-Agora vamos registrar as nossas interfaces informando de qual instância deve se criar a classe:
+Agora vamos registrar as nossas interfaces informando qual classe deverá ser instânciada ao se esperar um objeto da tipagem da interface.
 
 ```c#
 public partial class App : Application
 {
-      public App ()
-      {
-              InitializeComponent();
+	public App ()
+	{
+		InitializeComponent();
 
-              var unityContainer = new UnityContainer();
+		var unityContainer = new UnityContainer();
 
-              unityContainer.RegisterType<IProjetoRepository, ProjetoRepository>();
-              unityContainer.RegisterType<IProfissionalRepository, ProfissionalRepository>();
+		unityContainer.RegisterType<IProjetoRepository, ProjetoRepository>();
+		unityContainer.RegisterType<IProfissionalRepository, ProfissionalRepository>();
 
-              MainPage = new NavigationPage(new ProjetoPage());
-      }
+		unityContainer.RegisterType<IProjetoService, ProjetoService>();
+		unityContainer.RegisterType<IProfissionalService, ProfissionalService>();
+
+		MainPage = new NavigationPage(new HomePage());
+	}
 }
 ````
 
@@ -265,19 +378,23 @@ Vamos agora informar ao Builder que deverá utilizar esse container que acabamos
 ```c#
 public partial class App : Application
 {
-      public App ()
-      {
-              InitializeComponent();
+	public App ()
+	{
+		InitializeComponent();
 
-              var unityContainer = new UnityContainer();
+		var unityContainer = new UnityContainer();
 
-              unityContainer.RegisterType<IProjetoRepository, ProjetoRepository>();
-              unityContainer.RegisterType<IProfissionalRepository, ProfissionalRepository>();
+		unityContainer.RegisterType<IProjetoRepository, ProjetoRepository>();
+		unityContainer.RegisterType<IProfissionalRepository, ProfissionalRepository>();
 
-              ServiceLocator.SetLocatorProvider(() => new UnityServiceLocator(unityContainer));
+		unityContainer.RegisterType<IProjetoService, ProjetoService>();
+		unityContainer.RegisterType<IProfissionalService, ProfissionalService>();
 
-              MainPage = new NavigationPage(new ProjetoPage());
-      }
+		ServiceLocator.SetLocatorProvider(() => new UnityServiceLocator(unityContainer));
+
+		MainPage = new NavigationPage(new HomePage());
+	}
+
 }
 ````
 
@@ -285,111 +402,127 @@ public partial class App : Application
 
 Vamos corrigir as nossas ViewModels para utilização de interfaces ao invés de classes concretas. Vamos utilizar injeção de dependência via construtor.
 
-Edite a CalculoValorHoraPageViewModel.cs. Crie uma propriedade para essa classe do tipo IProfissionalRepository:
+Edite a CalculoValorHoraPageViewModel.cs. A nossa propriedade do tipo ProfissionalService será alterada para o tipo IProfissionalService.
 
 ```c#
-public IProfissionalRepository ProfissionalRepository { get; }
+private readonly IProfissionalService ProfissionalService;
 ````
 
-Vá no construtor dessa classe e coloque nos parâmetros recebidos um objeto do tipo IProfissionalRepository, e o utilize para inicial a nossa propriedade criada anteriormente:
+Vá no construtor dessa classe e coloque nos parâmetros recebidos um objeto do tipo IProfissionalService. Ao invés de instanciar a nossa propriedade ProfissionalService vamos atribuir a ela o valor recebido por parâmetro.
 
 ```c#
-public IProfissionalRepository ProfissionalRepository { get; }
+	...
 
-public CalculoValorHoraPageViewModel(IProfissionalRepository profissionalRepository)
-{
-    GravarCommand = new Command(ExecuteGravarCommand);
-    Profissional = new Profissional();
-    ProfissionalRepository = profissionalRepository;
-}
+	private readonly IProfissionalService ProfissionalService;
+
+	public CalculoValorHoraPageViewModel(IProfissionalService profissionalService)
+	{
+		GravarCommand = new Command(ExecuteGravarCommand);
+		Profissional = new Profissional();
+		ProfissionalService = profissionalService;
+	}
+	
+	...
+	
 ````
 
-Não foi mencionado anteriormente, mas o correto é que haja apenas um Profissional na tabela de Profissional do Azure, então ao abrir a tela vamos obter o profissional da base de dados do Azure.
-
-Primeiramente remova a instanciação do objeto profissional do construtor e chame uma função chamada ObterProfissional que vamos criar no próximo passo:
+Agora vamos fazer o mesmo para a ViewModel ProjetoPageViewModel. Vamos alterar a tipagem da propriedade ProjetoService para IProjetoService. Vamos receber no construtor da classe ProjetoPageViewModel um objeto do tipo IProjetoService e vamos atribuí-lo a nossa propriedade ProjetoService:
 
 ```c#
-public CalculoValorHoraPageViewModel(IProfissionalRepository profissionalRepository)
-{
-    GravarCommand = new Command(ExecuteGravarCommand);
-    ProfissionalRepository = profissionalRepository;
-    ObterProfissional();            
-}
+	...
+	
+	private readonly IProjetoService ProjetoService;
+
+	public ProjetoPageViewModel(IProjetoService projetoService)
+	{
+		GravarCommand = new Command(ExecuteGravarCommand);
+		LimparCommand = new Command(ExecuteLimparCommand);
+		ProjetoService = projetoService;
+	}
+	
+	...
 ````
 
-Agora vamos criar a função ObterProfissional, ela deverá chamar a função GetFirst do repository, caso retorne null é porque não foi encontrado nenhum profissional, então devemos instanciar nosso objeto Profissional, caso contrário, atribuimos o resultado da chamada GetFirst a nossa propriedade Profissional da ViewModel. 
+### Injeção de dependência - Services
+
+Agora edite o arquivo chamado ProfissionalService. Nossa propriedade que era do tipo AzureRepository será agora do tipo IProfissionalRepository. Então como fizemos nas ViewModels, vamos receber via construtor um objeto do tipo IProfissionalRepository e atribuir a nossa propriedade ProfissionalRepository.
 
 ```c#
-private async void ObterProfissional()
-{
-    Profissional = await ProfissionalRepository.GetFirst() ?? new Profissional();
-}
+	...
+
+	private readonly IProfissionalRepository ProfissionalRepository;
+
+	public ProfissionalService(IProfissionalRepository profissionalRepository)
+	{
+		ProfissionalRepository  = profissionalRepository;
+	}
+
+	...
+
 ````
 
-Caso tenha algo em nossa propriedade profissional devemos atualizar os valores da tela, vamos então criar uma funçào chamada AtualizaValoresTela, dessa forma:
+Agora faça o  mesmo com o ProjetoService. Vamos alterar a tipagem do ProjetoRepository para IProjetoRepository, receber um objeto dessa tipagem no construtor e atribuir a nossa propriedade.
 
 ```c#
-private void AtualizaValoresTela()
-{
-    ValorGanhoMes = Profissional.ValorGanhoMes;
-    HorasTrabalhadasPorDia = Profissional.HorasTrabalhadasPorDia;
-    DiasTrabalhadosPorMes = Profissional.DiasTrabalhadosPorMes;
-    DiasFeriasPorAno = Profissional.DiasFeriasPorAno;
-    ValorDaHora = Profissional.ValorPorHora;
-    DiasDoencaPorAno = Profissional.DiasDoencaPorAno;
-}
+
+	...
+
+	private readonly IProjetoRepository ProjetoRepository;
+
+	public ProjetoService(IProjetoRepository projetoRepository)
+	{
+		ProjetoRepository = projetoRepository;
+	}
+
+	...
+
 ````
 
-Como estamos utilizando Bindable na propriedade Profissional, no set dessa propriedade podemos chamar a função AtualizaValoresTela, dessa forma:
-
-```c#
-private Profissional profissional;
-public Profissional Profissional
-{
-    get { return profissional; }
-    set
-    {
-	SetProperty(ref profissional, value);
-	AtualizaValoresTela();
-    }
-}
-````
-
-Agora vamos na função ExecuteGravarCommand e chamar o nosso repository. Temos que verificar se há algo na propriedade Id do profissional, se há representa que o profissional já existe e deve então atualizá-lo, caso contrário deverá fazer uma inserção.
-
-```c#
-private async void ExecuteGravarCommand(object obj)
-{
-    Profissional.ValorGanhoMes = ValorGanhoMes;
-    Profissional.HorasTrabalhadasPorDia = HorasTrabalhadasPorDia;
-    Profissional.DiasTrabalhadosPorMes = DiasTrabalhadosPorMes;
-    Profissional.DiasFeriasPorAno = DiasFeriasPorAno;
-    Profissional.DiasDoencaPorAno = DiasDoencaPorAno;
-    Profissional.ValorPorHora = ValorDaHora;
-
-    if (!string.IsNullOrEmpty(profissional.Id))
-	await ProfissionalRepository.Update(profissional);
-    else
-	await ProfissionalRepository.Insert(profissional);
-
-    await App.Current.MainPage.DisplayAlert("Sucesso", "Valor por hora gravado!", "Ok");
-}
-````
+Como não usaremos mais a classe AzureProjetoRepository  que está dentro do projeto CalcCalcFreelancer.Infra.Data, vamos excluí-lo.
 
 ### Injeção de dependência - Views
 
-Agora se abrirmos o arquivo CalculoValorHoraPage.xaml.cs, no construtor onde instanciavamos um objeto do tipo CalculoValorHoraPageViewModel estará marcado com erro, pois a nossa ViewModel espera receber um objeto do tipo IProfissionalRepository.
-Mas não podemos criar uma instância concreta de ProfissionalRepository e passar por parâmetro, pois estariamos acabando com a vantagem da injeção de dependência e do reuso. Temos que chamar o nosso Builder, informando para ele criar uma instância do tipo CalculoValorHoraPageViewModel, e ele será responsável por resolver as dependências. Ficará assim:
+Agora se abrirmos o arquivo CalculoValorHoraPage.xaml.cs, no construtor onde instanciavamos um objeto do tipo CalculoValorHoraPageViewModel estará marcado com erro, pois a nossa ViewModel espera receber um objeto do tipo IProfissionalService.
+Mas não podemos criar uma instância concreta de ProfissionalService e passar por parâmetro, pois estariamos acabando com a vantagem da injeção de dependência e do reuso. Temos que chamar o nosso Builder, informando para ele criar uma instância do tipo CalculoValorHoraPageViewModel, e ele será responsável por resolver as dependências. Ficará assim:
 
 ```c#
+... 
+
 public CalculoValorHoraPage ()
 {
 	InitializeComponent ();
 	var viewModel = ServiceLocator.Current.GetInstance<CalculoValorHoraPageViewModel>();
 	BindingContext = viewModel;
 }   
+
+...
+
+````
+
+Vamos fazer o mesmo com o arquivo ProjetoPage.xaml.cs. Ao invés de instanciar um objeto do tipo ProjetoPageViewModel, vamos solicitar ao nosso Builder que nos retorne uma instância desse tipo.
+
+```c#
+
+...
+
+public ProjetoPage ()
+{
+	InitializeComponent ();
+	var viewModel = ServiceLocator.Current.GetInstance<ProjetoPageViewModel>();
+	BindingContext = viewModel;
+}
+	
+...
+
 ````
 
 ## Resultado
 
 Agora temos um código mais organizado, limpo, com um reuso bem maior do que anteriormente. A aparência do app não mudou em nada, mas internamente obtivemos um ganho enorme, facilitando a nossa vida de desenvolvedor, no momento de dar manutenções e reutilização de código.
+
+## Trocando nossa camada de CalcFreelancer.Infra.Data
+
+Pra mostrar a grande vantagem do uso da arquitetura em camadas juntamente com a injeção de dependência vamos alterar um pouco nosso armazenamento de dados. Vamos supor o seguinte cenário: O cliente não quer mais utilizar o Azure, pois está gastando muito e analisou que basta as informações do aplicativo ficarem salvas no próprio dispositivo que já será o suficiente. Para resolver essa nova solicitação do cliente, vamos utilizar ao invés do Azure o SqLite.
+
+
+
