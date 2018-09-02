@@ -525,4 +525,413 @@ Agora temos um código mais organizado, limpo, com um reuso bem maior do que ant
 Pra mostrar a grande vantagem do uso da arquitetura em camadas juntamente com a injeção de dependência vamos alterar um pouco nosso armazenamento de dados. Vamos supor o seguinte cenário: O cliente não quer mais utilizar o Azure, pois está gastando muito e analisou que basta as informações do aplicativo ficarem salvas no próprio dispositivo que já será o suficiente. Para resolver essa nova solicitação do cliente, vamos utilizar ao invés do Azure o SqLite.
 
 
+### Instalação do SqLite
 
+Clique com o botão diteiro sobre a Soluction, vá em Manage Nuget Packages for Solution... e clique em na guia Browse. Pesquise pela biblioteca chamada sqlite-net-pcl. Ao encontrá-la instale em todos os projetos.
+
+
+ <img src="https://github.com/dayaneLima/CalculadoraFreelancer05/blob/master/Docs/Imgs/aula_05_install_sqlite.png" alt="Instalação SqLite" width="100%">
+ 
+ ### Caminho do Banco de Dados
+ 
+ O Android e o IOS tem sistemas de armazenamento diferentes, o caminho do banco de dados em cada um também será. Então pela primeira vez precisaremos criar uma interface com o método que retorna o caminho do banco de dados no nosso projeto compartilhado, e criar a implementação dessa interface em cada plataforma.
+ 
+ #### Interface IDatabaseFile
+ 
+ No projeto CalcFreelancer.Domain, na pasta Interfaces, crie uma chamada IDatabaseFile. Essa interface terá uma função que receberá o nome do banco de dados e retonará o caminho completo para sua criação e acesso. A interface ficou assim:
+ 
+ ```c#
+public interface IDatabaseFile
+{
+	string GetFilePath(string file);
+}
+ ````
+ 
+ #### Implementando IDatabaseFile no projeto Android
+ 
+ No projeto CalcFreelancer.Android crie uma pasta chamada Database. Dentro desta pasta crie uma classe chamada DatabaseFile.
+ 
+ ```c#
+    public class DatabaseFile
+    {
+       
+    }
+ ````
+
+Agora vamos implementar da interface IDatabaseFile:
+
+```c#
+public class DatabaseFile : IDatabaseFile
+{
+
+}
+````
+
+A interface IDatabaseFile está no projeto CalcFreelancer.Domain, então temos que adicionar a referência desse projeto no nosso CalcFreelancer.Android. No projeto CalcFreelancer.Android clique com o botão direito em References, vá em Add Reference, Clique sobre Projects e além do CalcFreelancer que já está marcado, marque também o CalcFreelancer.Domain.
+
+
+ <img src="https://github.com/dayaneLima/CalculadoraFreelancer05/blob/master/Docs/Imgs/aula_05_add_reference_domain_android.png" alt="Adicionar Referência no projeto Android" width="100%">
+
+Agora ao clicar em ctrl + . sobre o IDatabaseFile que está marcado com erro o Visual Studio nos dá a opção de dar o using no projeto CalcFreelancer.Domain.Interfaces.
+
+Agora vamos implementar a função GetFilePath. Vamos salvar no caminho das pastas de sistema utilizando o SpecialFolder, escolhendo o Personal, que é um repositório para documentos.
+
+```c#
+public class DatabaseFile : IDatabaseFile
+{
+	public string GetFilePath(string filename)
+	{
+	    string path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);	    
+	}
+}
+````
+
+Agora vamos utilizar o Path.Combine para concatenar nosso nome do banco de dados que passamos por parâmetro com o caminho da pasta que desejamos salvar.
+
+```c#
+public class DatabaseFile : IDatabaseFile
+{
+	public string GetFilePath(string filename)
+	{
+	    string path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+	    return Path.Combine(path, filename);
+	}
+}
+````
+
+Agora temos que informar que a nossa classe DatabaseFile irá substituir a interface IDatabaseFile do nosso projeto principal utilizando o serviço de dependência do Xamarin Forms. Para isso, em cima do namespace vamos adicionar o seguinte trecho de código:
+
+```c#
+[assembly: Dependency(typeof(DatabaseFile))]
+````
+
+Ao clicar em ctro + . dê o using no Xamarin.Forms, o Visual Studio te dará outras opções.
+
+Ficou assim nossa classe no Android:
+
+
+```c#
+[assembly: Dependency(typeof(DatabaseFile))]
+namespace CalcFreelancer.Droid.Database
+{
+    public class DatabaseFile : IDatabaseFile
+    {
+        public string GetFilePath(string filename)
+        {
+            string path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+            return Path.Combine(path, filename);
+        }
+    }
+}
+````
+
+
+#### Implementando IDatabaseFile no projeto IOS
+
+Vamos fazer similar ao que fizemos no projeto Android. Vá no projeto CalcFreelancer.IOS, crie uma pasta chamada Database, dentro dela crie uma classe chamada DatabaseFile que implemente de IDatabaseFile.
+
+```c#
+public class DatabaseFile: IDatabaseFile
+{
+}
+````
+
+Adicione a referência ao projeto CalcFreelancer.Domain como fizemos no Android (clique com o botão direito em References, vá em Add Reference, Clique sobre Projects e além do CalcFreelancer que já está marcado, marque também o CalcFreelancer.Domain).
+
+Agora ao clicar em ctrl + . sobre o IDatabaseFile que está marcado com erro o Visual Studio nos dá a opção de dar o using no projeto CalcFreelancer.Domain.Interfaces.
+
+Vamos implementar a função GetFilePath. Ela é bem similar ao que fizemos no projeto Android, mas temos que armazenar na pasta Library para não ocorrer erro no IOS:
+
+```c#
+public class DatabaseFile: IDatabaseFile
+{
+	public string GetFilePath(string file)
+	{
+	    string docFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+	    string libFolder = System.IO.Path.Combine(docFolder, "..", "Library");
+	    return Path.Combine(libFolder, file);
+	}
+}
+````
+
+Como fizemos no projeto do Android, temos que informar que a nossa classe DatabaseFile irá substituir a interface IDatabaseFile do nosso projeto principal utilizando o serviço de dependência do Xamarin Forms. Para isso, em cima do namespace vamos adicionar o seguinte trecho de código:
+
+```c#
+[assembly: Dependency(typeof(DatabaseFile))]
+````
+
+Ao clicar em ctro + . dê o using no Xamarin.Forms, o Visual Studio te dará outras opções.
+
+Ficou assim nossa classe no IOS:
+
+```c#
+[assembly: Dependency(typeof(DatabaseFile))]
+namespace CalcFreelancer.iOS.Database
+{
+    public class DatabaseFile: IDatabaseFile
+    {
+        public string GetFilePath(string file)
+        {
+            string docFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            string libFolder = System.IO.Path.Combine(docFolder, "..", "Library");
+            return Path.Combine(libFolder, file);
+        }
+    }
+}
+````
+
+#### Implementado a classe DatabaseContext - projeto CalcFreelancer.Infra.Data
+
+Vamos agora no projeto CalcFreelancer.Infra.Data e implementar o acesso a dados com o SqLite. 
+
+Primeiramente dentro da pasta Repository crie uma classe chamada DatabaseContext que será responsável por criar nossas tabelas no banco de dados.
+
+```c#
+public class DatabaseContext
+{
+}
+````
+
+Essa classe terá duas propriedades, uma para representar a nossa própria classe DatabaseContext, pois utilizaremos o padrão Singleton, e outra para representar nossa conexão com o banco de dados:
+
+```c#
+public class DatabaseContext
+{
+	static DatabaseContext DatabaseSingleton;
+	static SQLiteAsyncConnection Conn;
+}
+````
+
+Vamos agora criar uma função chamada Database que retornará a conexão com o SqLite, e nela verificamos se nossa propriedade DatabaseSingleton é nula, caso for, a intânciamos, garantindo que vamos instanciá-la somente uma vez:
+
+```c#
+    ...
+
+        public static SQLiteAsyncConnection Database
+        {
+            get
+            {
+                if (DatabaseSingleton == null)
+                    DatabaseSingleton = new DatabaseContext();
+
+                return Conn;
+            }
+        }
+
+    ...
+````
+
+Agora temos que instalar o Xamarin.Forms também no nosso projeto CalcFreelancer.Infra.Data. Como o Xamarin Forms costuma ter atualizações, temos que instalar com a mesma versão que estamos utilizando nos outros projetos.
+
+Clique com o botão direito na Soluction e vá em Manage Nuget Packages For Solution, em Installed procure Xamarin.Forms. Marque o projeto CalcFreelancer.Infra.Data e em Version escolha a mesma que já está instalada nos outros projetos (basta olhar a versão que está escrita no campo Installed. Após escolher a versão correta clique em install.
+
+ <img src="https://github.com/dayaneLima/CalculadoraFreelancer05/blob/master/Docs/Imgs/aula_05_instalacao_xamarin_forms_infra.png" alt="Instalar o Xamarin Forms no projeto Infra.Data" width="100%">
+
+Vamos criar um construtor para a nossa classe DatabaseContext:
+
+```c#
+public DatabaseContext()
+{
+
+}
+````
+
+No construtor devemos obter o caminho do banco de dados que especificamos dentro de cada plataforma. Vamos utilizar DependencyService do Xamarin forms para nos dar uma instância do tipo IDatabaseFile que implementamos tanto no projeto IOS quando no Android. E após obter essa instância podemos chamar a função GetFilePath, passando para ela o nome do banco de dados que desejamos. Vamos chamar o banco de dados de calcfreelancer.db3. Ficará assim:
+
+```c#
+public DatabaseContext()
+{
+    var caminhoBancoDeDados = DependencyService.Get<IDatabaseFile>().GetFilePath("calcfreelancer.db3");
+}
+````
+
+Agora vamos criar a conexão com o SqLite passando para ela o caminho do banco de dados:
+
+```c#
+ public DatabaseContext()
+{
+    var caminhoBancoDeDados = DependencyService.Get<IDatabaseFile>().GetFilePath("calcfreelancer.db3");
+    Conn = new SQLiteAsyncConnection(caminhoBancoDeDados);
+}
+````
+
+Por último vamos pedir ao SqLite que crie nossas tabelas de Projeto e Profissional:
+
+```c#
+ public DatabaseContext()
+{
+    var caminhoBancoDeDados = DependencyService.Get<IDatabaseFile>().GetFilePath("calcfreelancer.db3");
+    Conn = new SQLiteAsyncConnection(caminhoBancoDeDados);
+
+    Conn.CreateTableAsync<Projeto>().Wait();
+    Conn.CreateTableAsync<Profissional>().Wait();
+}
+````
+
+Nossa classe final ficou assim:
+
+```c#
+public class DatabaseContext
+{
+	static DatabaseContext DatabaseSingleton;
+	static SQLiteAsyncConnection Conn;
+
+	public static SQLiteAsyncConnection Database
+	{
+	    get
+	    {
+		if (DatabaseSingleton == null)
+		    DatabaseSingleton = new DatabaseContext();
+
+		return Conn;
+	    }
+	}
+
+	public DatabaseContext()
+	{
+	    var caminhoBancoDeDados = DependencyService.Get<IDatabaseFile>().GetFilePath("calcfreelancer.db3");
+	    Conn = new SQLiteAsyncConnection(caminhoBancoDeDados);
+
+	    Conn.CreateTableAsync<Projeto>().Wait();
+	    Conn.CreateTableAsync<Profissional>().Wait();
+	}
+}
+````
+
+#### Implementado a classe SqLiteRepository - projeto CalcFreelancer.Infra.Data
+
+Ao invés de alterarmos a classe AzureRepository, vamos criar outra, chamada SqLiteRepository, dentro da pasta Repository. Ela terá a mesma lógica da AzureRepository, utilizando a tipagem genérica e implementando de IRepository:
+
+```c#
+public class SqLiteRepository<TEntity> : IRepository<TEntity> where TEntity : Entity
+{
+}
+````
+
+Vamos adicionar após o Entity o new(), pois o SqLite exige que o Entity seja uma classe com construtor instânciável, ficando assim:
+
+```c#
+public class SqLiteRepository<TEntity> : IRepository<TEntity> where TEntity : Entity, new()
+{
+}
+````
+
+Agora vamos implementar todas as funções do IRepository, nossa classe então ficou assim:
+
+```c#
+public class SqLiteRepository<TEntity> : IRepository<TEntity> where TEntity : Entity, new()
+{
+	public async Task Delete(TEntity tEntity)
+	{
+	    await DatabaseContext.Database.DeleteAsync(tEntity);
+	}
+
+	public async Task<TEntity> Find(string id)
+	{
+	    return await DatabaseContext.Database.Table<TEntity>().Where(x => x.Id == id).FirstAsync();
+	}
+
+	public async Task<IEnumerable<TEntity>> GetAll()
+	{
+	    return await DatabaseContext.Database.Table<TEntity>().ToListAsync();
+	}
+
+	public async Task<TEntity> GetFirst()
+	{
+	    return await DatabaseContext.Database.Table<TEntity>().FirstOrDefaultAsync();
+	}
+
+	public async Task Insert(TEntity tEntity)
+	{
+	    await DatabaseContext.Database.InsertAsync(tEntity);
+	}
+
+	public async Task Update(TEntity tEntity)
+	{
+	    await DatabaseContext.Database.UpdateAsync(tEntity);
+	}
+}
+````
+
+
+#### Alterando os repositórios ProfissionalRepository e ProjetoRepository - projeto CalcFreelancer.Infra.Data
+
+Agora nas classes ProfissionalRepository.cs e ProjetoRepository.cs ao invés de herdarmos de AzureRepository,  vamos trocar por SqLiteRepository:
+
+```c#
+public class ProjetoRepository : SqLiteRepository<Projeto>, IProjetoRepository
+{
+}
+````
+
+```c#
+public class ProfissionalRepository : SqLiteRepository<Profissional>, IProfissionalRepository
+{
+}
+````
+
+#### Alterando nosso domínio - projeto CalcFreelancer.Domain
+
+Vamos agora fazer umas pequenas alterações em nosso domínio. No projeto CalcFreelancer.Domain, nas classes Profissional e Projeto, utilizavamos o DataAnotation da biblioteca Microsoft.WindowsAzure.MobileServices para falar qual o nome da nossa tabela do banco de dados, agora temos que utilizar os DataAnotation do SqLite. 
+
+Edite o arquivo Profissional.cs dentro do projeto CalcFreelancer.Domain, dentro da pasta Profissionais. Onde estavamos utilizando o DataTable, troque para Table e dê o using no SQLite:
+
+```c#
+[Table("Profissional")]
+public class Profissional : Entity
+{
+	public double ValorGanhoMes { get; set; }
+	public int HorasTrabalhadasPorDia { get; set; }
+	public int DiasTrabalhadosPorMes { get; set; }
+	public int DiasFeriasPorAno { get; set; }
+	public double ValorPorHora { get; set; }
+}
+````
+
+Faça o mesmo para o Projeto.cs:
+
+```c#
+[Table("Projeto")]
+public class Projeto : Entity
+{
+	public string Nome { get; set; }
+	public double ValorPorHora { get; set; }
+	public int HorasPorDia { get; set; }
+	public int DiasDuracaoProjeto { get; set; }
+	public double ValorTotal { get; set; }
+}
+````
+
+#### Alterando nosso domínio base - projeto CalcFreelancer.Domain.Core
+
+Vamos alterar a nossa classe base Entity, pois a mesma utilizava também da biblioteca Microsoft.WindowsAzure.MobileServices e agora temos que utilizar do SQLite. Como não vamos utilizar mais o Version do Azure, podemos retirá-lo:
+
+```c#
+public class Entity
+{
+	public string Id { get; set; }
+	public DateTime CreatedAt { get; set; }
+	public DateTime UpdatedAt { get; set; }
+}
+````
+
+No SQLite, temos que informar quem serão as chaves primárias de nossas tabelas, no caso será nossa propriedade Id. Vamos utilizar o DataAnotation para informar que nossa propriedade Id será Primary Key. O Azure criava o Id para nós automaticamente, como não estamos utilizando mais o Azure, vamos adicionar um construtor para nossa classe Entity e atribuir um valor para a propriedade Id. Para isso vamos utilizar o Guid do c#, que gera um hash único. Ficou assim:
+
+```c#
+public class Entity
+{
+	[PrimaryKey]
+	public string Id { get; set; }
+	public DateTime CreatedAt { get; set; }
+	public DateTime UpdatedAt { get; set; }
+
+	public Entity()
+	{
+	    Id = Guid.NewGuid().ToString();
+	}
+}
+````
+
+## Resultado
+
+Prontinho, agora alteramos o nosso projeto para usar o SQLite. Deu um pouquinho de trabalho, mas tenha certeza de que sem a injeção de dependência e utilização de uma boa arquitetura, teria nos dado muito mais trabalho. Alteramos apenas nossas camadas de Domain e Infra, além do Android e IOS para acesso ao caminho do bando de dados.
